@@ -1,0 +1,34 @@
+plugins {
+    id 'java'
+}
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '17'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.3'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// gradle8対策
+// Toolchain from `executable` property does not match toolchain from `javaLauncher` property
+gradle.taskGraph.whenReady { taskGraph ->
+    def task = taskGraph.allTasks.find { it.name.endsWith(".main()") }
+    if (task instanceof JavaExec) {
+        task.executable = task.javaLauncher.get().executablePath.asFile.absolutePath
+    }
+}
