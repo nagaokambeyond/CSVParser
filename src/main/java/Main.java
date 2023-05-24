@@ -1,7 +1,8 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
-
+import example.parser.CSVParser;
+    
 public class Main {
     public static void main(String[] args) throws Exception {
         BufferedReader reader = null;
@@ -15,7 +16,7 @@ public class Main {
 
             System.out.println("String to be parsed = " + doc);
             reader = new BufferedReader(new StringReader(doc));
-            CSVParser parser = new CSVParser(reader);
+            var parser = new CSVParser(reader);
             String[] res;
 
             while ((res = parser.splitLine()) != null) {
