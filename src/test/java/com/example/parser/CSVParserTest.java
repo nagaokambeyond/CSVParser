@@ -1,3 +1,5 @@
+package com.example.parser;
+
 import org.junit.jupiter.api.Test;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -84,7 +86,7 @@ public class CSVParserTest {
     
     private List<String[]> main(final String doc) {
         final var reader = new BufferedReader(new StringReader(doc));
-        final var parser = new example.parser.CSVParser(reader);
+        final var parser = new com.example.parser.CSVParser(reader);
         String[] res;
         var result = new ArrayList<String[]>();
 

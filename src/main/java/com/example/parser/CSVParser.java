@@ -1,4 +1,4 @@
-package example.parser;
+package com.example.parser;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,7 +31,7 @@ public class CSVParser {
             pos++;
         }
 
-        if (line.length() > 0 && line.charAt(line.length() - 1) == ',') {
+        if (!line.isEmpty() && line.charAt(line.length() - 1) == ',') {
             al.add("");
         }
 
@@ -110,12 +110,12 @@ public class CSVParser {
     }
 
     public String nextLine() throws IOException {
-        String result = "";
+        String result;
         do {
             result = reader.readLine();
             if (result == null)
                 return null;
-        } while (result.trim().equals(""));
+        } while (result.trim().isEmpty());
         return result;
     }
 }
