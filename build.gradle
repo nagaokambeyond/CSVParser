@@ -3,21 +3,20 @@ plugins {
 }
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '17'
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.2'
-    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.25.3'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.3'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.3'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.26.3'
 }
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
