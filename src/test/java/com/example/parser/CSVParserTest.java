@@ -16,13 +16,38 @@ public class CSVParserTest {
         final var list = main(doc);
         assertThat(list.size()).isEqualTo(1);
         
-        final String[] res = list.get(0);
+        final String[] res = list.getFirst();
         assertThat(res.length).isEqualTo(3);
         assertThat(res[0]).isEqualTo("a");
         assertThat(res[1]).isEqualTo("b");
         assertThat(res[2]).isEqualTo("c");
     }
 
+    @Test
+    void ダブルクォートあり(){
+        final String doc = "\"a\",b,c";
+        final var list = main(doc);
+        assertThat(list.size()).isEqualTo(1);
+
+        final String[] res = list.getFirst();
+        assertThat(res.length).isEqualTo(3);
+        assertThat(res[0]).isEqualTo("\"a\"");
+        assertThat(res[1]).isEqualTo("b");
+        assertThat(res[2]).isEqualTo("c");
+    }
+
+    @Test
+    void ダブルクォートありでカンマあり(){
+        final String doc = "\"a,d\",b,c";
+        final var list = main(doc);
+        assertThat(list.size()).isEqualTo(1);
+
+        final String[] res = list.getFirst();
+        assertThat(res.length).isEqualTo(3);
+        assertThat(res[0]).isEqualTo("\"a,d\"");
+        assertThat(res[1]).isEqualTo("b");
+        assertThat(res[2]).isEqualTo("c");
+    }
     @Test
     void 空(){
         final String doc = "";

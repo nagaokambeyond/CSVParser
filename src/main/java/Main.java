@@ -2,7 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import com.example.parser.CSVParser;
-    
+
 public class Main {
     public static void main(String[] args) throws Exception {
         BufferedReader reader = null;
@@ -17,11 +17,11 @@ public class Main {
             System.out.println("String to be parsed = " + doc);
             reader = new BufferedReader(new StringReader(doc));
             var parser = new CSVParser(reader);
-            String[] res;
+            String[] columns;
 
-            while ((res = parser.splitLine()) != null) {
-                for (String r : res) {
-                    System.out.println("Token Found [" + r + "] \n");
+            while ((columns = parser.splitLine()) != null) {
+                for (final var value : columns) {
+                    System.out.println("Token Found [" + value + "] \n");
                 }
             }
         } catch (IOException e) {
