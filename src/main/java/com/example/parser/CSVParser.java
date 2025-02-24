@@ -5,97 +5,110 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class CSVParser {
-
     private String line = "";
-    private int nbLines = 0;
     private final BufferedReader reader;
 
-    public CSVParser(BufferedReader reader) {
+    public CSVParser(final BufferedReader reader) {
+        if (reader == null)
+            throw new NullPointerException();
         this.reader = reader;
     }
 
     public String[] splitLine() throws IOException, ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        nbLines = 0;
-        var al = new ArrayList<String>();
         line = nextLine();
         if (line == null)
             return null;
 
-        nbLines = 1;
+        var result = new ArrayList<String>();
         int currentPos = 0;
         while (currentPos < line.length()) {
-            int startPos = currentPos;
-            currentPos = findNextComma(startPos);
-            al.add(line.substring(startPos, currentPos));
+            final int startPos = currentPos;
+            currentPos = getValueEndPos(startPos);
+            result.add(line.substring(startPos, currentPos));
             currentPos++;
         }
 
         if (!line.isEmpty() && line.charAt(line.length() - 1) == ',') {
-            al.add("");
+            result.add("");
         }
 
-        return al.toArray(new String[] {});
+        return result.toArray(new String[]{});
     }
 
-    private int findNextComma(int currentPos) throws ErrorOccurredWhileParsingException, IOException, UnexpectedTokenFoundException {
-        char currentChar = line.charAt(currentPos);
+    private int getValueEndPos(int currentPos) throws ErrorOccurredWhileParsingException, IOException, UnexpectedTokenFoundException {
+        var currentChar = line.charAt(currentPos);
 
-        if (currentChar == ',') {
+        if (isComma(currentChar)) {
             // 現在の文字がカンマの場合→空の項目である
-            // 111, , 333
-            //    　↑
-            //    　currentChar
+            // 111,,333
+            //    ↑
+            //    currentChar==3
             return currentPos;
         }
 
-        if (currentChar != '"') {
+        if (isNotDoubleQuote(currentChar)) {
             // 現在の文字がダブルクォートではない場合
-            // 　111, , 333, 444
-            // 　   　　↑
-            //   　 　　currentChar
-            int kommaPos = line.indexOf(',', currentPos);
-            if (kommaPos == -1) {
-                // 現在の文字がダブルクォートではない場合
-                // 111, , 333
-                //    　　↑
-                kommaPos = line.length();
+            // 　111,,333,444
+            //   ↑
+            //   currentChar==0
+            final int commaPos = line.indexOf(',', currentPos);
+            if (notExists(commaPos)) {
+                // 現在の文字がダブルクォートではなく
+                // 現在の文字より後にダブルクォートが存在しない場合
+                // 　その１　カンマなし
+                // 　　111
+                // 　　↑
+                //    currentChar==0
+                // 　その２　以降にカンマなし
+                // 　　111,,333
+                // 　　     ↑
+                //         currentChar==5
+                return line.length();   // 乱暴ではある
             }
-            return kommaPos;
+            return commaPos;
         }
 
         // 現在の文字がダブルクォートである場合→開始のダブルクォート
-        // 　111, , "333", 444
-        // 　       ↑
-        // 　       currentPos
+        // 　111,,"333",444
+        // 　     ↑
+        // 　     currentPos==5
+
+        // 次へ
+        // 　111,,"333",444
+        // 　      ↑
+        // 　      currentPos==6
         currentPos++;
 
         while (true) {
             currentChar = readNextChar(currentPos);
             currentPos++;
 
-            if (currentChar != '"') {
-                // 　111, , "333", 444
-                // 　        ↑
+            if (isNotDoubleQuote(currentChar)) {
+                // 現在の文字がダブルクォートではない場合
+                // 　111,,"333",444
+                // 　       ↑
+                // 　       currentPos==7
                 continue;
             }
 
-            if (currentPos == line.length()) {
+            if (isEndPos(currentPos)) {
                 // 　111, , "333", "444"
                 // 　                   ↑
+                // 　                   currentPos
                 return currentPos;
             }
 
             currentChar = readNextChar(currentPos);
             currentPos++;
 
-            if (currentChar == '"') {
+            if (isDoubleQuote(currentChar)) {
                 // 現在の文字がダブルクォートの場合→終端のダブルクォート
                 // 　111, , "333", 444
                 // 　           ↑
                 continue;
             }
 
-            if (currentChar == ',') {
+            if (isComma(currentChar)) {
                 // 現在の文字がカンマの場合
                 // 　111, , "333", 444
                 // 　            ↑
@@ -112,7 +125,6 @@ public class CSVParser {
             if (newLine == null)
                 throw new ErrorOccurredWhileParsingException("Error occurred while parsing");
             line += "\n" + newLine;
-            nbLines++;
         }
         return line.charAt(currentPos);
     }
@@ -125,5 +137,25 @@ public class CSVParser {
                 return null;
         } while (result.trim().isEmpty());
         return result;
+    }
+
+    private boolean isDoubleQuote(final char val) {
+        return val == '"';
+    }
+
+    private boolean isNotDoubleQuote(final char val) {
+        return val != '"';
+    }
+
+    private boolean isComma(final char val) {
+        return val == ',';
+    }
+
+    private boolean isEndPos(final int pos) {
+        return pos == line.length();
+    }
+
+    private boolean notExists(final int pos) {
+        return pos == -1;
     }
 }
