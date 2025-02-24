@@ -22,9 +22,9 @@ public class CSVParser {
         var result = new ArrayList<String>();
         int currentPos = 0;
         while (currentPos < line.length()) {
-            final int startPos = currentPos;
-            currentPos = getValueEndPos(startPos);
-            result.add(line.substring(startPos, currentPos));
+            final int valueStartPos = currentPos;
+            currentPos = getValueEndPos(valueStartPos);
+            result.add(line.substring(valueStartPos, currentPos));
             currentPos++;
         }
 
@@ -41,7 +41,7 @@ public class CSVParser {
         if (isComma(currentChar)) {
             // 現在の文字がカンマの場合→空の項目である
             // 111,,333
-            //    ↑
+            //    ^
             //    currentChar==3
             return currentPos;
         }
@@ -49,7 +49,7 @@ public class CSVParser {
         if (isNotDoubleQuote(currentChar)) {
             // 現在の文字がダブルクォートではない場合
             // 　111,,333,444
-            //   ↑
+            //   ^
             //   currentChar==0
             final int commaPos = line.indexOf(',', currentPos);
             if (notExists(commaPos)) {
@@ -57,11 +57,11 @@ public class CSVParser {
                 // 現在の文字より後にダブルクォートが存在しない場合
                 // 　その１　カンマなし
                 // 　　111
-                // 　　↑
+                // 　　^
                 //    currentChar==0
                 // 　その２　以降にカンマなし
                 // 　　111,,333
-                // 　　     ↑
+                // 　　     ^
                 //         currentChar==5
                 return line.length();   // 乱暴ではある
             }
@@ -70,12 +70,12 @@ public class CSVParser {
 
         // 現在の文字がダブルクォートである場合→開始のダブルクォート
         // 　111,,"333",444
-        // 　     ↑
+        // 　     ^
         // 　     currentPos==5
 
         // 次へ
         // 　111,,"333",444
-        // 　      ↑
+        // 　      ^
         // 　      currentPos==6
         currentPos++;
 
@@ -86,15 +86,17 @@ public class CSVParser {
             if (isNotDoubleQuote(currentChar)) {
                 // 現在の文字がダブルクォートではない場合
                 // 　111,,"333",444
-                // 　       ↑
-                // 　       currentPos==7
+                // 　      ^^
+                // 　      |currentPos==7
+                // 　      |currentChar
                 continue;
             }
 
             if (isEndPos(currentPos)) {
-                // 　111, , "333", "444"
-                // 　                   ↑
-                // 　                   currentPos
+                // 現在の文字が最後の文字の場合
+                // 　111,,"33
+                // 　       ^
+                // 　       currentPos==7
                 return currentPos;
             }
 
@@ -103,15 +105,16 @@ public class CSVParser {
 
             if (isDoubleQuote(currentChar)) {
                 // 現在の文字がダブルクォートの場合→終端のダブルクォート
-                // 　111, , "333", 444
-                // 　           ↑
+                // 　111,,"333",444
+                // 　         ^
+                // 　         currentPos==9
                 continue;
             }
 
             if (isComma(currentChar)) {
                 // 現在の文字がカンマの場合
                 // 　111, , "333", 444
-                // 　            ↑
+                // 　            ^
                 return currentPos - 1;
             }
 
@@ -119,7 +122,7 @@ public class CSVParser {
         }
     }
 
-    private char readNextChar(int currentPos) throws ErrorOccurredWhileParsingException, IOException {
+    private char readNextChar(final int currentPos) throws ErrorOccurredWhileParsingException, IOException {
         if (currentPos == line.length()) {
             final var newLine = reader.readLine();
             if (newLine == null)

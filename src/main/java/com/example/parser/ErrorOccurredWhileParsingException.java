@@ -1,7 +1,10 @@
 package com.example.parser;
 
-public class ErrorOccurredWhileParsingException extends Exception{
-    public ErrorOccurredWhileParsingException(String message){
+/**
+ * ダブルクォートが閉じられていない場合にthrowする
+ */
+public class ErrorOccurredWhileParsingException extends Exception {
+    public ErrorOccurredWhileParsingException(String message) {
         super(message);
     }
 }

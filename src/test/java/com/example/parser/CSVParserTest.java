@@ -12,11 +12,12 @@ import java.util.List;
 import java.util.Queue;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class CSVParserTest {
     @Test
     @DisplayName("通常")
-    void normal() {
+    void normal() throws ErrorOccurredWhileParsingException {
         final String doc = "a,b,c";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
@@ -30,7 +31,7 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("ダブルクォートあり")
-    void value_double_quote() {
+    void value_double_quote() throws ErrorOccurredWhileParsingException {
         final String doc = "\"a\",b,c";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
@@ -44,7 +45,7 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("ダブルクォートありでカンマあり")
-    void value_double_quote_comma() {
+    void value_double_quote_comma() throws ErrorOccurredWhileParsingException {
         final String doc = "\"a,d\",b,c";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
@@ -58,7 +59,7 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("空")
-    void empty() {
+    void empty() throws ErrorOccurredWhileParsingException {
         final String doc = "";
         final var list = prepareData(doc);
         assertThat(list).hasSize(0);
@@ -66,7 +67,7 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("値なし")
-    void no_value() {
+    void no_value() throws ErrorOccurredWhileParsingException {
         final String doc = ",";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
@@ -79,7 +80,7 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("値が漢字")
-    void value_kanji() {
+    void value_kanji() throws ErrorOccurredWhileParsingException {
         final String doc = "あ,い";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
@@ -92,7 +93,7 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("値が絵文字")
-    void value_emoji() {
+    void value_emoji() throws ErrorOccurredWhileParsingException {
         final String doc = "🍎,🗻";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
@@ -105,7 +106,7 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("全角カンマ")
-    void comma1() {
+    void comma1() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
         final String doc = "、";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
@@ -117,7 +118,7 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("全角カンマ２")
-    void comma2() {
+    void comma2() throws ErrorOccurredWhileParsingException {
         final String doc = "，";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
@@ -127,8 +128,18 @@ public class CSVParserTest {
         assertThat(res.poll()).isEqualTo("，");
     }
 
+    @Test
+    @DisplayName("ErrorOccurredWhileParsingException")
+    void exception_test1() {
+        assertThrows(ErrorOccurredWhileParsingException.class, () -> {
+                final String doc = "\"abc\nde\",\"f";
+                final var list = prepareData(doc);
+            }
+        );
+    }
 
-    private List<String[]> prepareData(final String doc) {
+
+    private List<String[]> prepareData(final String doc) throws ErrorOccurredWhileParsingException {
         var result = new ArrayList<String[]>();
 
         try (final var reader = new BufferedReader(new StringReader(doc))) {
@@ -137,7 +148,7 @@ public class CSVParserTest {
             while ((res = parser.splitLine()) != null) {
                 result.add(res);
             }
-        } catch (IOException | ErrorOccurredWhileParsingException | UnexpectedTokenFoundException e) {
+        } catch (IOException | UnexpectedTokenFoundException e) {
             e.printStackTrace();
         }
         return result;
