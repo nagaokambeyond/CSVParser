@@ -28,7 +28,7 @@ public class CSVParser {
             currentPos++;
         }
 
-        if (!line.isEmpty() && line.charAt(line.length() - 1) == ',') {
+        if (!line.isEmpty() && isComma(line.charAt(line.length() - 1))) {
             result.add("");
         }
 
@@ -147,7 +147,7 @@ public class CSVParser {
     }
 
     private boolean isNotDoubleQuote(final char val) {
-        return val != '"';
+        return !isDoubleQuote(val);
     }
 
     private boolean isComma(final char val) {

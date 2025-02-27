@@ -17,8 +17,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class CSVParserTest {
     @Test
     @DisplayName("通常")
-    void normal() throws ErrorOccurredWhileParsingException {
-        final String doc = "a,b,c";
+    void normal() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "a,b,c";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
 
@@ -31,8 +31,8 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("ダブルクォートあり")
-    void value_double_quote() throws ErrorOccurredWhileParsingException {
-        final String doc = "\"a\",b,c";
+    void value_double_quote() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "\"a\",b,c";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
 
@@ -45,8 +45,8 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("ダブルクォートありでカンマあり")
-    void value_double_quote_comma() throws ErrorOccurredWhileParsingException {
-        final String doc = "\"a,d\",b,c";
+    void value_double_quote_comma() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "\"a,d\",b,c";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
 
@@ -58,17 +58,30 @@ public class CSVParserTest {
     }
 
     @Test
+    @DisplayName("最後の要素がダブルクォートつき")
+    void value_double_quote_end() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "\"a,d\",\"1\"";
+        final var list = prepareData(doc);
+        assertThat(list).hasSize(1);
+
+        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+        assertThat(res).hasSize(2);
+        assertThat(res.poll()).isEqualTo("\"a,d\"");
+        assertThat(res.poll()).isEqualTo("\"1\"");
+    }
+
+    @Test
     @DisplayName("空")
-    void empty() throws ErrorOccurredWhileParsingException {
-        final String doc = "";
+    void empty() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "";
         final var list = prepareData(doc);
         assertThat(list).hasSize(0);
     }
 
     @Test
     @DisplayName("値なし")
-    void no_value() throws ErrorOccurredWhileParsingException {
-        final String doc = ",";
+    void no_value() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = ",";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
 
@@ -80,8 +93,8 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("値が漢字")
-    void value_kanji() throws ErrorOccurredWhileParsingException {
-        final String doc = "あ,い";
+    void value_kanji() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "あ,い";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
 
@@ -93,8 +106,8 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("値が絵文字")
-    void value_emoji() throws ErrorOccurredWhileParsingException {
-        final String doc = "🍎,🗻";
+    void value_emoji() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "🍎,🗻";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
 
@@ -107,7 +120,7 @@ public class CSVParserTest {
     @Test
     @DisplayName("全角カンマ")
     void comma1() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final String doc = "、";
+        final var doc = "、";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
 
@@ -118,8 +131,8 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("全角カンマ２")
-    void comma2() throws ErrorOccurredWhileParsingException {
-        final String doc = "，";
+    void comma2() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "，";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
 
@@ -132,14 +145,28 @@ public class CSVParserTest {
     @DisplayName("ErrorOccurredWhileParsingException")
     void exception_test1() {
         assertThrows(ErrorOccurredWhileParsingException.class, () -> {
-                final String doc = "\"abc\nde\",\"f";
-                final var list = prepareData(doc);
+                final var doc = "\"abc\nde\",\"f";
+                prepareData(doc);
             }
         );
     }
 
+    @Test
+    @DisplayName("NullPointerException")
+    void exception_test2() {
+        assertThrows(NullPointerException.class, () -> new CSVParser(null));
+    }
 
-    private List<String[]> prepareData(final String doc) throws ErrorOccurredWhileParsingException {
+    @Test
+    @DisplayName("UnexpectedTokenFoundException")
+    void exception_test3() {
+        assertThrows(UnexpectedTokenFoundException.class, () -> {
+            final String doc = "\"a,d\",\"1\" ";
+            final var list = prepareData(doc);
+        });
+    }
+
+    private List<String[]> prepareData(final String doc) throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
         var result = new ArrayList<String[]>();
 
         try (final var reader = new BufferedReader(new StringReader(doc))) {
@@ -148,7 +175,7 @@ public class CSVParserTest {
             while ((res = parser.splitLine()) != null) {
                 result.add(res);
             }
-        } catch (IOException | UnexpectedTokenFoundException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return result;
