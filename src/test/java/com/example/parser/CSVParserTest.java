@@ -30,6 +30,20 @@ public class CSVParserTest {
     }
 
     @Test
+    @DisplayName("タブあり")
+    void value_tab() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "\"a\t\",b,\tc";
+        final var list = prepareData(doc);
+        assertThat(list).hasSize(1);
+
+        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+        assertThat(res).hasSize(3);
+        assertThat(res.poll()).isEqualTo("\"a\t\"");
+        assertThat(res.poll()).isEqualTo("b");
+        assertThat(res.poll()).isEqualTo("\tc");
+    }
+
+    @Test
     @DisplayName("ダブルクォートあり")
     void value_double_quote() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
         final var doc = "\"a\",b,c";
@@ -143,7 +157,7 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("ErrorOccurredWhileParsingException")
-    void exception_test1() {
+    void exception_ErrorOccurredWhileParsingException() {
         assertThrows(ErrorOccurredWhileParsingException.class, () -> {
                 final var doc = "\"abc\nde\",\"f";
                 prepareData(doc);
@@ -153,16 +167,27 @@ public class CSVParserTest {
 
     @Test
     @DisplayName("NullPointerException")
-    void exception_test2() {
+    void exception_NullPointerException() {
         assertThrows(NullPointerException.class, () -> new CSVParser(null));
     }
 
     @Test
     @DisplayName("UnexpectedTokenFoundException")
-    void exception_test3() {
+    void exception_UnexpectedTokenFoundException() {
         assertThrows(UnexpectedTokenFoundException.class, () -> {
             final String doc = "\"a,d\",\"1\" ";
-            final var list = prepareData(doc);
+            prepareData(doc);
+        });
+    }
+
+    @Test
+    @DisplayName("IOException")
+    void exception_IOException() {
+        assertThrows(IOException.class, () -> {
+            final var reader = new BufferedReader(new StringReader(""));
+            reader.close();
+            final var parser = new CSVParser(reader);
+            parser.splitLine();
         });
     }
 
