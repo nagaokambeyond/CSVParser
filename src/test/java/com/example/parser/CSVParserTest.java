@@ -1,6 +1,7 @@
 package com.example.parser;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.BufferedReader;
@@ -30,6 +31,20 @@ public class CSVParserTest {
     }
 
     @Test
+    @DisplayName("スペースあり")
+    void space() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "a a a,b bb, c cc ";
+        final var list = prepareData(doc);
+        assertThat(list).hasSize(1);
+
+        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+        assertThat(res).hasSize(3);
+        assertThat(res.poll()).isEqualTo("a a a");
+        assertThat(res.poll()).isEqualTo("b bb");
+        assertThat(res.poll()).isEqualTo(" c cc ");
+    }
+
+    @Test
     @DisplayName("タブあり")
     void value_tab() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
         final var doc = "\"a\t\",b,\tc";
@@ -43,45 +58,49 @@ public class CSVParserTest {
         assertThat(res.poll()).isEqualTo("\tc");
     }
 
-    @Test
-    @DisplayName("ダブルクォートあり")
-    void value_double_quote() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "\"a\",b,c";
-        final var list = prepareData(doc);
-        assertThat(list).hasSize(1);
+    @DisplayName("ダブルクォートテスト")
+    @Nested
+    class DoubleQuoteTest {
+        @Test
+        @DisplayName("ダブルクォートあり")
+        void value_double_quote() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = "\"a\",b,c";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(1);
 
-        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
-        assertThat(res).hasSize(3);
-        assertThat(res.poll()).isEqualTo("\"a\"");
-        assertThat(res.poll()).isEqualTo("b");
-        assertThat(res.poll()).isEqualTo("c");
-    }
+            final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+            assertThat(res).hasSize(3);
+            assertThat(res.poll()).isEqualTo("\"a\"");
+            assertThat(res.poll()).isEqualTo("b");
+            assertThat(res.poll()).isEqualTo("c");
+        }
 
-    @Test
-    @DisplayName("ダブルクォートありでカンマあり")
-    void value_double_quote_comma() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "\"a,d\",b,c";
-        final var list = prepareData(doc);
-        assertThat(list).hasSize(1);
+        @Test
+        @DisplayName("ダブルクォートありでカンマあり")
+        void value_double_quote_comma() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = "\"a,d\",b,c";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(1);
 
-        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
-        assertThat(res).hasSize(3);
-        assertThat(res.poll()).isEqualTo("\"a,d\"");
-        assertThat(res.poll()).isEqualTo("b");
-        assertThat(res.poll()).isEqualTo("c");
-    }
+            final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+            assertThat(res).hasSize(3);
+            assertThat(res.poll()).isEqualTo("\"a,d\"");
+            assertThat(res.poll()).isEqualTo("b");
+            assertThat(res.poll()).isEqualTo("c");
+        }
 
-    @Test
-    @DisplayName("最後の要素がダブルクォートつき")
-    void value_double_quote_end() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "\"a,d\",\"1\"";
-        final var list = prepareData(doc);
-        assertThat(list).hasSize(1);
+        @Test
+        @DisplayName("最後の要素がダブルクォートつき")
+        void value_double_quote_end() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = "\"a,d\",\"1\"";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(1);
 
-        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
-        assertThat(res).hasSize(2);
-        assertThat(res.poll()).isEqualTo("\"a,d\"");
-        assertThat(res.poll()).isEqualTo("\"1\"");
+            final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+            assertThat(res).hasSize(2);
+            assertThat(res.poll()).isEqualTo("\"a,d\"");
+            assertThat(res.poll()).isEqualTo("\"1\"");
+        }
     }
 
     @Test
@@ -103,6 +122,14 @@ public class CSVParserTest {
         assertThat(res).hasSize(2);
         assertThat(res.poll()).isEqualTo("");
         assertThat(res.poll()).isEqualTo("");
+    }
+
+    @Test
+    @DisplayName("コメント")
+    void comment()throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "#,";
+        final var list = prepareData(doc);
+        assertThat(list).hasSize(0);
     }
 
     @Test
@@ -146,49 +173,66 @@ public class CSVParserTest {
     @Test
     @DisplayName("全角カンマ２")
     void comma2() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "，";
+        final var doc = "a，bb";
         final var list = prepareData(doc);
         assertThat(list).hasSize(1);
 
         final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
         assertThat(res).hasSize(1);
-        assertThat(res.poll()).isEqualTo("，");
+        assertThat(res.poll()).isEqualTo("a，bb");
     }
 
     @Test
-    @DisplayName("ErrorOccurredWhileParsingException")
-    void exception_ErrorOccurredWhileParsingException() {
-        assertThrows(ErrorOccurredWhileParsingException.class, () -> {
-                final var doc = "\"abc\nde\",\"f";
+    @DisplayName("全角カンマ３")
+    void comma3() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "a，bb,cc";
+        final var list = prepareData(doc);
+        assertThat(list).hasSize(1);
+
+        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+        assertThat(res).hasSize(2);
+        assertThat(res.poll()).isEqualTo("a，bb");
+        assertThat(res.poll()).isEqualTo("cc");
+    }
+
+    @DisplayName("ExceptionTest")
+    @Nested
+    class ExceptionTest {
+        @Test
+        @DisplayName("ErrorOccurredWhileParsingException")
+        void exception_ErrorOccurredWhileParsingException() {
+            assertThrows(ErrorOccurredWhileParsingException.class, () -> {
+                    final var doc = "\"abc\nde\",\"f";
+                    prepareData(doc);
+                }
+            );
+        }
+
+        @Test
+        @DisplayName("NullPointerException")
+        void exception_NullPointerException() {
+            assertThrows(NullPointerException.class, () -> new CSVParser(null));
+        }
+
+        @Test
+        @DisplayName("UnexpectedTokenFoundException")
+        void exception_UnexpectedTokenFoundException() {
+            assertThrows(UnexpectedTokenFoundException.class, () -> {
+                final String doc = "\"a,d\",\"1\" ";
                 prepareData(doc);
-            }
-        );
-    }
+            });
+        }
 
-    @Test
-    @DisplayName("NullPointerException")
-    void exception_NullPointerException() {
-        assertThrows(NullPointerException.class, () -> new CSVParser(null));
-    }
-
-    @Test
-    @DisplayName("UnexpectedTokenFoundException")
-    void exception_UnexpectedTokenFoundException() {
-        assertThrows(UnexpectedTokenFoundException.class, () -> {
-            final String doc = "\"a,d\",\"1\" ";
-            prepareData(doc);
-        });
-    }
-
-    @Test
-    @DisplayName("IOException")
-    void exception_IOException() {
-        assertThrows(IOException.class, () -> {
-            final var reader = new BufferedReader(new StringReader(""));
-            reader.close();
-            final var parser = new CSVParser(reader);
-            parser.splitLine();
-        });
+        @Test
+        @DisplayName("IOException")
+        void exception_IOException() {
+            assertThrows(IOException.class, () -> {
+                final var reader = new BufferedReader(new StringReader(""));
+                reader.close();
+                final var parser = new CSVParser(reader);
+                parser.splitLine();
+            });
+        }
     }
 
     private List<String[]> prepareData(final String doc) throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {

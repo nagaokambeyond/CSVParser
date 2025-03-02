@@ -16,8 +16,13 @@ public class CSVParser {
 
     public String[] splitLine() throws IOException, ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
         line = nextLine();
-        if (line == null)
+        if (line == null) {
             return null;
+        }
+
+        if (isLineComment(line)) {
+            return null;
+        }
 
         var result = new ArrayList<String>();
         int currentPos = 0;
@@ -132,7 +137,7 @@ public class CSVParser {
         return line.charAt(currentPos);
     }
 
-    public String nextLine() throws IOException {
+    private String nextLine() throws IOException {
         String result;
         do {
             result = reader.readLine();
@@ -160,5 +165,9 @@ public class CSVParser {
 
     private boolean notExists(final int pos) {
         return pos == -1;
+    }
+
+    private boolean isLineComment(final String val) {
+        return (val.length() > 0) && (val.charAt(0) == '#');
     }
 }
