@@ -31,31 +31,127 @@ public class CSVParserTest {
     }
 
     @Test
-    @DisplayName("スペースあり")
-    void space() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "a a a,b bb, c cc ";
+    @DisplayName("コメント")
+    void comment() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "#,";
         final var list = prepareData(doc);
-        assertThat(list).hasSize(1);
-
-        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
-        assertThat(res).hasSize(3);
-        assertThat(res.poll()).isEqualTo("a a a");
-        assertThat(res.poll()).isEqualTo("b bb");
-        assertThat(res.poll()).isEqualTo(" c cc ");
+        assertThat(list).hasSize(0);
     }
 
-    @Test
-    @DisplayName("タブあり")
-    void value_tab() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "\"a\t\",b,\tc";
-        final var list = prepareData(doc);
-        assertThat(list).hasSize(1);
+    @Nested
+    @DisplayName("値テスト")
+    class ValueTest {
+        @Test
+        @DisplayName("スペースあり")
+        void value_in_space() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = "a a a,b bb, c cc ";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(1);
 
-        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
-        assertThat(res).hasSize(3);
-        assertThat(res.poll()).isEqualTo("\"a\t\"");
-        assertThat(res.poll()).isEqualTo("b");
-        assertThat(res.poll()).isEqualTo("\tc");
+            final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+            assertThat(res).hasSize(3);
+            assertThat(res.poll()).isEqualTo("a a a");
+            assertThat(res.poll()).isEqualTo("b bb");
+            assertThat(res.poll()).isEqualTo(" c cc ");
+        }
+
+        @Test
+        @DisplayName("タブあり")
+        void value_in_tab() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = "\"a\t\",b,\tc";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(1);
+
+            final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+            assertThat(res).hasSize(3);
+            assertThat(res.poll()).isEqualTo("\"a\t\"");
+            assertThat(res.poll()).isEqualTo("b");
+            assertThat(res.poll()).isEqualTo("\tc");
+        }
+
+        @Test
+        @DisplayName("空")
+        void empty() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = "";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(0);
+        }
+
+        @Test
+        @DisplayName("値なし")
+        void no_value() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = ",";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(1);
+
+            final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+            assertThat(res).hasSize(2);
+            assertThat(res.poll()).isEqualTo("");
+            assertThat(res.poll()).isEqualTo("");
+        }
+
+        @Test
+        @DisplayName("値が漢字")
+        void value_kanji() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = "あ,い";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(1);
+
+            final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+            assertThat(res).hasSize(2);
+            assertThat(res.poll()).isEqualTo("あ");
+            assertThat(res.poll()).isEqualTo("い");
+        }
+
+        @Test
+        @DisplayName("値が絵文字")
+        void value_emoji() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = "🍎,🗻";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(1);
+
+            final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+            assertThat(res).hasSize(2);
+            assertThat(res.poll()).isEqualTo("🍎");
+            assertThat(res.poll()).isEqualTo("🗻");
+        }
+
+        @Test
+        @DisplayName("全角カンマ")
+        void comma1() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = "、";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(1);
+
+            final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+            assertThat(res).hasSize(1);
+            assertThat(res.poll()).isEqualTo("、");
+        }
+
+        @Test
+        @DisplayName("全角カンマ２")
+        void comma2() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = "a，bb";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(1);
+
+            final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+            assertThat(res).hasSize(1);
+            assertThat(res.poll()).isEqualTo("a，bb");
+        }
+
+        @Test
+        @DisplayName("全角カンマ３")
+        void comma3() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = "a，bb,cc";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(1);
+
+            final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+            assertThat(res).hasSize(2);
+            assertThat(res.poll()).isEqualTo("a，bb");
+            assertThat(res.poll()).isEqualTo("cc");
+        }
     }
 
     @DisplayName("ダブルクォートテスト")
@@ -101,98 +197,6 @@ public class CSVParserTest {
             assertThat(res.poll()).isEqualTo("\"a,d\"");
             assertThat(res.poll()).isEqualTo("\"1\"");
         }
-    }
-
-    @Test
-    @DisplayName("空")
-    void empty() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "";
-        final var list = prepareData(doc);
-        assertThat(list).hasSize(0);
-    }
-
-    @Test
-    @DisplayName("値なし")
-    void no_value() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = ",";
-        final var list = prepareData(doc);
-        assertThat(list).hasSize(1);
-
-        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
-        assertThat(res).hasSize(2);
-        assertThat(res.poll()).isEqualTo("");
-        assertThat(res.poll()).isEqualTo("");
-    }
-
-    @Test
-    @DisplayName("コメント")
-    void comment()throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "#,";
-        final var list = prepareData(doc);
-        assertThat(list).hasSize(0);
-    }
-
-    @Test
-    @DisplayName("値が漢字")
-    void value_kanji() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "あ,い";
-        final var list = prepareData(doc);
-        assertThat(list).hasSize(1);
-
-        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
-        assertThat(res).hasSize(2);
-        assertThat(res.poll()).isEqualTo("あ");
-        assertThat(res.poll()).isEqualTo("い");
-    }
-
-    @Test
-    @DisplayName("値が絵文字")
-    void value_emoji() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "🍎,🗻";
-        final var list = prepareData(doc);
-        assertThat(list).hasSize(1);
-
-        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
-        assertThat(res).hasSize(2);
-        assertThat(res.poll()).isEqualTo("🍎");
-        assertThat(res.poll()).isEqualTo("🗻");
-    }
-
-    @Test
-    @DisplayName("全角カンマ")
-    void comma1() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "、";
-        final var list = prepareData(doc);
-        assertThat(list).hasSize(1);
-
-        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
-        assertThat(res).hasSize(1);
-        assertThat(res.poll()).isEqualTo("、");
-    }
-
-    @Test
-    @DisplayName("全角カンマ２")
-    void comma2() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "a，bb";
-        final var list = prepareData(doc);
-        assertThat(list).hasSize(1);
-
-        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
-        assertThat(res).hasSize(1);
-        assertThat(res.poll()).isEqualTo("a，bb");
-    }
-
-    @Test
-    @DisplayName("全角カンマ３")
-    void comma3() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "a，bb,cc";
-        final var list = prepareData(doc);
-        assertThat(list).hasSize(1);
-
-        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
-        assertThat(res).hasSize(2);
-        assertThat(res.poll()).isEqualTo("a，bb");
-        assertThat(res.poll()).isEqualTo("cc");
     }
 
     @DisplayName("ExceptionTest")
