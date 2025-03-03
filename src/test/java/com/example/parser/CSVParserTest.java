@@ -56,7 +56,7 @@ public class CSVParserTest {
         }
 
         @Test
-        @DisplayName("タブあり")
+        @DisplayName("値にタブあり")
         void value_in_tab() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
             final var doc = "\"a\t\",b,\tc";
             final var list = prepareData(doc);
@@ -70,8 +70,8 @@ public class CSVParserTest {
         }
 
         @Test
-        @DisplayName("空")
-        void empty() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        @DisplayName("値なし")
+        void empty_value1() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
             final var doc = "";
             final var list = prepareData(doc);
             assertThat(list).hasSize(0);
@@ -79,7 +79,7 @@ public class CSVParserTest {
 
         @Test
         @DisplayName("値なし")
-        void no_value() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        void value_value2() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
             final var doc = ",";
             final var list = prepareData(doc);
             assertThat(list).hasSize(1);
@@ -173,7 +173,7 @@ public class CSVParserTest {
 
         @Test
         @DisplayName("ダブルクォートありでカンマあり")
-        void value_double_quote_comma() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        void value_double_quote_in_comma() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
             final var doc = "\"a,d\",b,c";
             final var list = prepareData(doc);
             assertThat(list).hasSize(1);

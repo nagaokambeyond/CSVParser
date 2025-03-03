@@ -9,8 +9,9 @@ public class CSVParser {
     private final BufferedReader reader;
 
     public CSVParser(final BufferedReader reader) {
-        if (reader == null)
+        if (reader == null){
             throw new NullPointerException();
+        }
         this.reader = reader;
     }
 
@@ -141,8 +142,9 @@ public class CSVParser {
         String result;
         do {
             result = reader.readLine();
-            if (result == null)
+            if (result == null) {
                 return null;
+            }
         } while (result.trim().isEmpty());
         return result;
     }
@@ -168,6 +170,6 @@ public class CSVParser {
     }
 
     private boolean isLineComment(final String val) {
-        return (val.length() > 0) && (val.charAt(0) == '#');
+        return (!val.isEmpty()) && (val.charAt(0) == '#');
     }
 }
