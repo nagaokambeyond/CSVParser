@@ -9,8 +9,8 @@ public class CSVParser {
     private final BufferedReader reader;
 
     public CSVParser(final BufferedReader reader) {
-        if (reader == null){
-            throw new NullPointerException();
+        if (reader == null) {
+            throw new IllegalArgumentException("BufferedReader cannot be null.");
         }
         this.reader = reader;
     }
@@ -124,15 +124,16 @@ public class CSVParser {
                 return currentPos - 1;
             }
 
-            throw new UnexpectedTokenFoundException("Unexpected token found");
+            throw new UnexpectedTokenFoundException("Unexpected token found.");
         }
     }
 
     private char readNextChar(final int currentPos) throws ErrorOccurredWhileParsingException, IOException {
         if (currentPos == line.length()) {
             final var newLine = reader.readLine();
-            if (newLine == null)
-                throw new ErrorOccurredWhileParsingException("Error occurred while parsing");
+            if (newLine == null) {
+                throw new ErrorOccurredWhileParsingException("Error occurred while parsing.");
+            }
             line += "\n" + newLine;
         }
         return line.charAt(currentPos);
@@ -170,6 +171,6 @@ public class CSVParser {
     }
 
     private boolean isLineComment(final String val) {
-        return (!val.isEmpty()) && (val.charAt(0) == '#');
+        return !val.isEmpty() && val.charAt(0) == '#';
     }
 }

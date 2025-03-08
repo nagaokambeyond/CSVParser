@@ -199,6 +199,32 @@ public class CSVParserTest {
         }
     }
 
+    @Test
+    @DisplayName("改行つき1")
+    void value_new_line1() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "\"a\nd\",\",1\"";
+        final var list = prepareData(doc);
+        assertThat(list).hasSize(1);
+
+        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+        assertThat(res).hasSize(2);
+        assertThat(res.poll()).isEqualTo("\"a\nd\"");
+        assertThat(res.poll()).isEqualTo("\",1\"");
+    }
+
+    @Test
+    @DisplayName("改行つき2")
+    void value_new_line2() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+        final var doc = "\"a\n\n,\n\nd\",\",1\"";
+        final var list = prepareData(doc);
+        assertThat(list).hasSize(1);
+
+        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+        assertThat(res).hasSize(2);
+        assertThat(res.poll()).isEqualTo("\"a\n\n,\n\nd\"");
+        assertThat(res.poll()).isEqualTo("\",1\"");
+    }
+
     @DisplayName("ExceptionTest")
     @Nested
     class ExceptionTest {
@@ -213,9 +239,9 @@ public class CSVParserTest {
         }
 
         @Test
-        @DisplayName("NullPointerException")
-        void exception_NullPointerException() {
-            assertThrows(NullPointerException.class, () -> new CSVParser(null));
+        @DisplayName("IllegalArgumentException")
+        void exception_IllegalArgumentException() {
+            assertThrows(IllegalArgumentException.class, () -> new CSVParser(null));
         }
 
         @Test
