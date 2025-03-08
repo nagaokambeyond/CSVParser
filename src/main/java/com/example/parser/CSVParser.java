@@ -3,13 +3,14 @@ package com.example.parser;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 public class CSVParser {
     private String line = "";
     private final BufferedReader reader;
 
     public CSVParser(final BufferedReader reader) {
-        if (reader == null) {
+        if (Objects.isNull(reader)) {
             throw new IllegalArgumentException("BufferedReader cannot be null.");
         }
         this.reader = reader;
@@ -17,11 +18,7 @@ public class CSVParser {
 
     public String[] splitLine() throws IOException, ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
         line = nextLine();
-        if (line == null) {
-            return null;
-        }
-
-        if (isLineComment(line)) {
+        if (Objects.isNull(line) || isLineComment(line)) {
             return null;
         }
 
@@ -131,7 +128,7 @@ public class CSVParser {
     private char readNextChar(final int currentPos) throws ErrorOccurredWhileParsingException, IOException {
         if (currentPos == line.length()) {
             final var newLine = reader.readLine();
-            if (newLine == null) {
+            if (Objects.isNull(newLine)) {
                 throw new ErrorOccurredWhileParsingException("Error occurred while parsing.");
             }
             line += "\n" + newLine;
@@ -143,7 +140,7 @@ public class CSVParser {
         String result;
         do {
             result = reader.readLine();
-            if (result == null) {
+            if (Objects.isNull(result)) {
                 return null;
             }
         } while (result.trim().isEmpty());
