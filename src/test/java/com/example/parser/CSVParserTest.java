@@ -197,6 +197,18 @@ public class CSVParserTest {
             assertThat(res.poll()).isEqualTo("\"a,d\"");
             assertThat(res.poll()).isEqualTo("\"1\"");
         }
+
+        @Test
+        @DisplayName("ダブルクォート内にダブルクォート")
+        void value_double_quote_in_double_quote() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = "\"a\"\"b\"";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(1);
+
+            final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+            assertThat(res).hasSize(1);
+            assertThat(res.poll()).isEqualTo("\"a\"\"b\"");
+        }
     }
 
     @Test
@@ -229,8 +241,28 @@ public class CSVParserTest {
     @Nested
     class ExceptionTest {
         @Test
-        @DisplayName("ErrorOccurredWhileParsingException")
-        void exception_ErrorOccurredWhileParsingException() {
+        @DisplayName("ErrorOccurredWhileParsingException_ダブルクォート閉じられてない1")
+        void exception_ErrorOccurredWhileParsingException1() {
+            assertThrows(ErrorOccurredWhileParsingException.class, () -> {
+                    final var doc = "\"a,b,c";
+                    prepareData(doc);
+                }
+            );
+        }
+
+        @Test
+        @DisplayName("ErrorOccurredWhileParsingException_ダブルクォート閉じられてない2")
+        void exception_ErrorOccurredWhileParsingException2() {
+            assertThrows(ErrorOccurredWhileParsingException.class, () -> {
+                    final var doc = "\"a,b,\nc";
+                    prepareData(doc);
+                }
+            );
+        }
+
+        @Test
+        @DisplayName("ErrorOccurredWhileParsingException_ダブルクォート閉じられてない3")
+        void exception_ErrorOccurredWhileParsingException3() {
             assertThrows(ErrorOccurredWhileParsingException.class, () -> {
                     final var doc = "\"abc\nde\",\"f";
                     prepareData(doc);
