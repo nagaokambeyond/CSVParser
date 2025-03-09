@@ -27,7 +27,8 @@ public class CSVParser {
         while (currentPos < line.length()) {
             final int valueStartPos = currentPos;
             currentPos = getValueEndPos(valueStartPos);
-            result.add(line.substring(valueStartPos, currentPos));
+            final var val = line.substring(valueStartPos, currentPos);
+            result.add(escapeDoubleQuotes(val));
             currentPos++;
         }
 
@@ -36,6 +37,28 @@ public class CSVParser {
         }
 
         return result.toArray(new String[]{});
+    }
+
+    private String escapeDoubleQuotes(final String val) {
+        var result = new StringBuilder();
+
+        for (int pos = 0; pos < val.length(); pos++) {
+            final var currentChar = val.charAt(pos);
+            if (isNotDoubleQuote(currentChar)) {
+                result.append(currentChar);
+                continue;
+            }
+
+            final var nextPos = pos + 1;
+            if (nextPos < val.length()) {
+                final var nextChar = val.charAt(nextPos);
+                if (isDoubleQuote(nextChar)) {
+                    result.append('"');
+                    pos++;
+                }
+            }
+        }
+        return result.toString();
     }
 
     private int getValueEndPos(int currentPos) throws ErrorOccurredWhileParsingException, IOException, UnexpectedTokenFoundException {

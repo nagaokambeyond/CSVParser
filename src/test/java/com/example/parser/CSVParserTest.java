@@ -64,7 +64,7 @@ public class CSVParserTest {
 
             final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
             assertThat(res).hasSize(3);
-            assertThat(res.poll()).isEqualTo("\"a\t\"");
+            assertThat(res.poll()).isEqualTo("a\t");
             assertThat(res.poll()).isEqualTo("b");
             assertThat(res.poll()).isEqualTo("\tc");
         }
@@ -166,7 +166,7 @@ public class CSVParserTest {
 
             final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
             assertThat(res).hasSize(3);
-            assertThat(res.poll()).isEqualTo("\"a\"");
+            assertThat(res.poll()).isEqualTo("a");
             assertThat(res.poll()).isEqualTo("b");
             assertThat(res.poll()).isEqualTo("c");
         }
@@ -180,7 +180,7 @@ public class CSVParserTest {
 
             final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
             assertThat(res).hasSize(3);
-            assertThat(res.poll()).isEqualTo("\"a,d\"");
+            assertThat(res.poll()).isEqualTo("a,d");
             assertThat(res.poll()).isEqualTo("b");
             assertThat(res.poll()).isEqualTo("c");
         }
@@ -194,8 +194,8 @@ public class CSVParserTest {
 
             final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
             assertThat(res).hasSize(2);
-            assertThat(res.poll()).isEqualTo("\"a,d\"");
-            assertThat(res.poll()).isEqualTo("\"1\"");
+            assertThat(res.poll()).isEqualTo("a,d");
+            assertThat(res.poll()).isEqualTo("1");
         }
 
         @Test
@@ -207,7 +207,7 @@ public class CSVParserTest {
 
             final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
             assertThat(res).hasSize(1);
-            assertThat(res.poll()).isEqualTo("\"a\"\"b\"");
+            assertThat(res.poll()).isEqualTo("a\"b");
         }
     }
 
@@ -220,8 +220,8 @@ public class CSVParserTest {
 
         final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
         assertThat(res).hasSize(2);
-        assertThat(res.poll()).isEqualTo("\"a\nd\"");
-        assertThat(res.poll()).isEqualTo("\",1\"");
+        assertThat(res.poll()).isEqualTo("a\nd");
+        assertThat(res.poll()).isEqualTo(",1");
     }
 
     @Test
@@ -233,8 +233,8 @@ public class CSVParserTest {
 
         final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
         assertThat(res).hasSize(2);
-        assertThat(res.poll()).isEqualTo("\"a\n\n,\n\nd\"");
-        assertThat(res.poll()).isEqualTo("\",1\"");
+        assertThat(res.poll()).isEqualTo("a\n\n,\n\nd");
+        assertThat(res.poll()).isEqualTo(",1");
     }
 
     @DisplayName("ExceptionTest")
