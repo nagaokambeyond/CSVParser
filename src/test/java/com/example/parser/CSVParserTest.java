@@ -3,6 +3,8 @@ package com.example.parser;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -38,6 +40,7 @@ public class CSVParserTest {
         assertThat(list).hasSize(0);
     }
 
+    @Execution(ExecutionMode.CONCURRENT)
     @Nested
     @DisplayName("値テスト")
     class ValueTest {
@@ -154,6 +157,7 @@ public class CSVParserTest {
         }
     }
 
+    @Execution(ExecutionMode.CONCURRENT)
     @DisplayName("ダブルクォートテスト")
     @Nested
     class DoubleQuoteTest {
@@ -209,34 +213,35 @@ public class CSVParserTest {
             assertThat(res).hasSize(1);
             assertThat(res.poll()).isEqualTo("a\"b");
         }
+
+        @Test
+        @DisplayName("改行つき1")
+        void value_new_line1() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = "\"a\nd\",\",1\"";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(1);
+
+            final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+            assertThat(res).hasSize(2);
+            assertThat(res.poll()).isEqualTo("a\nd");
+            assertThat(res.poll()).isEqualTo(",1");
+        }
+
+        @Test
+        @DisplayName("改行つき2")
+        void value_new_line2() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
+            final var doc = "\"a\n\n,\n\nd\",\",1\"";
+            final var list = prepareData(doc);
+            assertThat(list).hasSize(1);
+
+            final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
+            assertThat(res).hasSize(2);
+            assertThat(res.poll()).isEqualTo("a\n\n,\n\nd");
+            assertThat(res.poll()).isEqualTo(",1");
+        }
     }
 
-    @Test
-    @DisplayName("改行つき1")
-    void value_new_line1() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "\"a\nd\",\",1\"";
-        final var list = prepareData(doc);
-        assertThat(list).hasSize(1);
-
-        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
-        assertThat(res).hasSize(2);
-        assertThat(res.poll()).isEqualTo("a\nd");
-        assertThat(res.poll()).isEqualTo(",1");
-    }
-
-    @Test
-    @DisplayName("改行つき2")
-    void value_new_line2() throws ErrorOccurredWhileParsingException, UnexpectedTokenFoundException {
-        final var doc = "\"a\n\n,\n\nd\",\",1\"";
-        final var list = prepareData(doc);
-        assertThat(list).hasSize(1);
-
-        final Queue<String> res = new ArrayDeque<>(List.of(list.getFirst()));
-        assertThat(res).hasSize(2);
-        assertThat(res.poll()).isEqualTo("a\n\n,\n\nd");
-        assertThat(res.poll()).isEqualTo(",1");
-    }
-
+    @Execution(ExecutionMode.CONCURRENT)
     @DisplayName("ExceptionTest")
     @Nested
     class ExceptionTest {
@@ -306,9 +311,7 @@ public class CSVParserTest {
             while ((res = parser.splitLine()) != null) {
                 result.add(res);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) {}
         return result;
     }
 }
